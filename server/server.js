@@ -3,10 +3,7 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, PORT = 8888 } = process.env;
-const base = "https://api-m.paypal.com";
-const base_sanbox = "https://api-m.sandbox.paypal.com";
-const url_paypal = base_sanbox;
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, BASE, PORT = 8888 } = process.env;
 
 const app = express();
 
@@ -28,7 +25,7 @@ const generateAccessToken = async () => {
     console.log('client id:' + PAYPAL_CLIENT_ID)
     console.log('sec key:' + PAYPAL_CLIENT_SECRET)
     const auth = Buffer.from(PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET).toString("base64");
-    const response = await fetch(`${url_paypal}/v1/oauth2/token`, {
+    const response = await fetch(`${BASE}/v1/oauth2/token`, {
       method: "POST",
       body: "grant_type=client_credentials",
       headers: { Authorization: `Basic ${auth}` },
@@ -49,7 +46,7 @@ const generateAccessToken = async () => {
 const createOrder = async () => {
   const accessToken = await generateAccessToken();
   console.log('access tok:' + accessToken);
-  const url = `${url_paypal}/v2/checkout/orders`;
+  const url = `${BASE}/v2/checkout/orders`;
   const payload = {
     intent: "CAPTURE",
     purchase_units: [
@@ -85,7 +82,7 @@ const createOrder = async () => {
  */
 const captureOrder = async (orderID) => {
   const accessToken = await generateAccessToken();
-  const url = `${url_paypal}/v2/checkout/orders/${orderID}/capture`;
+  const url = `${BASE}/v2/checkout/orders/${orderID}/capture`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -144,6 +141,10 @@ app.get("/", (req, res) => {
 
 app.get("/price", (req, res) => {
   res.send(PRICE)
+});
+
+app.get('/id', (req, res) => {
+  res.json({ id: PAYPAL_CLIENT_ID });
 });
 
 app.listen(PORT, () => {
