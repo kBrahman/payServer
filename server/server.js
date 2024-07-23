@@ -118,7 +118,6 @@ app.get('/sdk', async (req, res) => {
     const sdkUrl = `https://www.paypal.com/sdk/js?client-id=ATXbfWAOjgSShh8EyoVvJgiYw4y3-D-rmJynYJx1GEpB9Cw7w8eABcK5lBS9g8opQX-NALVvWEHmJj9p&components=buttons&enable-funding=venmo,paylater`;
     console.log('sdkUrl:'+sdkUrl); 
     const response = await axios.get(sdkUrl, { responseType: 'text' });
-    console.log('axios resp:'+response.data); 
     res.set('Content-Type', 'application/javascript');
     res.send(response.data);
   } catch (error) {
