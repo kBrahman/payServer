@@ -73,6 +73,9 @@ window.paypal
           `Sorry, your transaction could not be processed...<br><br>${error}`
         );
       }
+    },
+    async onError(data, action){
+      console.log('app err:'+data);
     }
   })
   .render("#paypal-button-container");
