@@ -114,4 +114,4 @@ const observer = new MutationObserver(function(mutationsList, observer) {
   }
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+// observer.observe(document.body, { childList: true, subtree: true });
