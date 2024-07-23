@@ -83,6 +83,7 @@ function resultMessage(message) {
 
 
 function monitorIframe(iframe) {
+
   iframe.onload = function () {
     iframe.contentWindow.addEventListener('load', function () {
       OrderChannel.postMessage(iframe.contentWindow.location.href);

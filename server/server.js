@@ -2,6 +2,7 @@ import express from "express";
 import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
+import axios from "axios";
 
 const app = express();
 
@@ -23,8 +24,6 @@ const generateAccessToken = async () => {
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
       throw new Error("MISSING_API_CREDENTIALS");
     }
-    console.log('client id:' + PAYPAL_CLIENT_ID)
-    console.log('sec key:' + PAYPAL_CLIENT_SECRET)
     const auth = Buffer.from(PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET).toString("base64");
     const response = await fetch(`${BASE}/v1/oauth2/token`, {
       method: "POST",
@@ -33,7 +32,6 @@ const generateAccessToken = async () => {
     });
 
     const data = await response.json();
-    console.log('auth resp:' + JSON.stringify(data))
     return data.access_token;
   } catch (error) {
     console.error("Failed to generate Access Token:", error);
@@ -113,6 +111,21 @@ async function handleResponse(response) {
     throw new Error(errorMessage);
   }
 }
+
+app.get('/sdk', async (req, res) => {
+  try {
+    console.log('client id:'+PAYPAL_CLIENT_ID);
+    const sdkUrl = `https://www.paypal.com/sdk/js?client-id=ATXbfWAOjgSShh8EyoVvJgiYw4y3-D-rmJynYJx1GEpB9Cw7w8eABcK5lBS9g8opQX-NALVvWEHmJj9p&components=buttons&enable-funding=venmo,paylater`;
+    console.log('sdkUrl:'+sdkUrl); 
+    const response = await axios.get(sdkUrl, { responseType: 'text' });
+    console.log('axios resp:'+response.data); 
+    res.set('Content-Type', 'application/javascript');
+    res.send(response.data);
+  } catch (error) {
+    console.error('Error fetching the PayPal SDK:', error);
+    res.status(500).send('Error fetching the PayPal SDK');
+  }
+});
 
 app.post("/api/orders", async (req, res) => {
   try {
