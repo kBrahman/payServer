@@ -2,7 +2,6 @@ window.paypal
   .Buttons({
     style: {
       shape: 'pill',
-      //color:'blue', change the default color of the buttons
       layout: 'vertical', //default value. Can be changed to horizontal
     },
     async createOrder() {
@@ -74,8 +73,8 @@ window.paypal
         );
       }
     },
-    async onError(data, action){
-      console.log('app err:'+data);
+    onError(err) {
+      console.log('btn err:'+err);
     }
   })
   .render("#paypal-button-container");
@@ -83,35 +82,3 @@ window.paypal
 function resultMessage(message) {
   console.log('result msg:' + message);
 }
-
-
-// function monitorIframe(iframe) {
-
-//   iframe.onload = function () {
-//     iframe.contentWindow.addEventListener('load', function () {
-//       OrderChannel.postMessage(iframe.contentWindow.location.href);
-//     });
-//     const observer = new MutationObserver(function () {
-//       OrderChannel.postMessage(iframe.contentWindow.location.href);
-//     });
-
-//     observer.observe(iframe.contentWindow.document, { subtree: true, childList: true});
-//   };
-// }
-
-// const observer = new MutationObserver(function(mutationsList, observer) {
-//   console.log('global observer init');
-//   for (let mutation of mutationsList) {
-//     if (mutation.type === 'childList') {
-//       const iframes = document.querySelectorAll('iframe[name^="__zoid__paypal_buttons__"][title="PayPal"]');
-//       if (iframes.length > 0) {
-//         const iframe = iframes[0];
-//         monitorIframe(iframe);
-//         observer.disconnect(); // Stop observing once the iframe is found and monitored
-//         break;
-//       }
-//     }
-//   }
-// });
-
-// observer.observe(document.body, { childList: true, subtree: true });
