@@ -66,15 +66,7 @@ window.paypal
           );
           OrderChannel.postMessage('COMPLETED');
         }
-      } catch (error) {
-        console.error(error);
-        resultMessage(
-          `Sorry, your transaction could not be processed...<br><br>${error}`
-        );
-      }
-    },
-    onError(err) {
-      console.log('btn err:'+err);
+      } catch (error) {  console.error(error);}
     }
   })
   .render("#paypal-button-container");
