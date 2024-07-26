@@ -2,17 +2,14 @@ import express from "express";
 import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
-import axios from "axios";
+
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, BASE, PORT = 8888 } = process.env;
+
 
 const app = express();
 
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, BASE, PORT = 8888 } = process.env;
 app.use(express.static("client"));
-
-
-// host static files
-// parse post params sent in body in json format
 app.use(express.json());
 
 /**
@@ -28,9 +25,8 @@ const generateAccessToken = async () => {
     const response = await fetch(`${BASE}/v1/oauth2/token`, {
       method: "POST",
       body: "grant_type=client_credentials",
-      headers: { Authorization: `Basic ${auth}` },
+      headers: { Authorization: `Basic ${auth}` }
     });
-
     const data = await response.json();
     return data.access_token;
   } catch (error) {
@@ -112,20 +108,6 @@ async function handleResponse(response) {
   }
 }
 
-app.get('/sdk', async (req, res) => {
-  try {
-    console.log('client id:'+PAYPAL_CLIENT_ID);
-    const sdkUrl = `https://www.paypal.com/sdk/js?client-id=ATXbfWAOjgSShh8EyoVvJgiYw4y3-D-rmJynYJx1GEpB9Cw7w8eABcK5lBS9g8opQX-NALVvWEHmJj9p&components=buttons&enable-funding=venmo,paylater`;
-    console.log('sdkUrl:'+sdkUrl); 
-    const response = await axios.get(sdkUrl, { responseType: 'text' });
-    res.set('Content-Type', 'application/javascript');
-    res.send(response.data);
-  } catch (error) {
-    console.error('Error fetching the PayPal SDK:', error);
-    res.status(500).send('Error fetching the PayPal SDK');
-  }
-});
-
 app.post("/api/orders", async (req, res) => {
   try {
     // use the cart information passed from the front-end to calculate the order amount detals
@@ -149,6 +131,7 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
 });
 
 app.get("/pay", (req, res) => {
+  console.log('on req, login:',req.query.login);
   res.sendFile(path.resolve("./client/checkout.html"));
 });
 
@@ -157,7 +140,13 @@ app.get("/price", (req, res) => {
 });
 
 app.get('/id', (req, res) => {
+  console.log('get id');
   res.json({ id: PAYPAL_CLIENT_ID });
+});
+
+app.get('/favicon.ico',(req,res)=>{
+console.log('get fav');
+res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
