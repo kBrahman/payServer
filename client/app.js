@@ -57,12 +57,8 @@ fetch('/id').then(resp => resp.json())
             } else {
               // (3) Successful transaction -> Show confirmation or thank you message
               // Or go to another URL:  actions.redirect('thank_you.html');
-              actions.redirect(`${window.location.origin}/paid.html`);
+              actions.redirect(`${window.location.origin}/paid`);
               console.log('should redirect');
-              const transaction =
-                orderData?.purchase_units?.[0]?.payments?.captures?.[0] ||
-                orderData?.purchase_units?.[0]?.payments?.authorizations?.[0];
-              resultMessage(transaction.status);
             }
           } catch (error) { console.error(error); }
         }
