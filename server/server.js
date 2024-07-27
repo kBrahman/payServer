@@ -3,7 +3,8 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
 import admin from "firebase-admin";
-import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
+import fs from 'fs';
+const serviceAccount = JSON.parse(fs.readFileSync('server/serviceAccountKey.json', 'utf-8'));
 import { get } from "http";
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
