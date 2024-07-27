@@ -3,10 +3,15 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
 import admin from "firebase-admin";
-import fs from 'fs';
-const serviceAccount = JSON.parse(fs.readFileSync('server/serviceAccountKey.json', 'utf-8'));
-import { get } from "http";
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const serviceAccount = JSON.parse(readFileSync(`${__dirname}/serviceAccountKey.json`, 'utf-8'));admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, BASE, PORT = 8888 } = process.env;
 const app = express();
