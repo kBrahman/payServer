@@ -11,7 +11,8 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const serviceAccount = JSON.parse(readFileSync(`${__dirname}/serviceAccountKey.json`, 'utf-8'));admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+const serviceAccount = JSON.parse(readFileSync(`${__dirname}/serviceAccountKey.json`, 'utf-8'));
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PRICE, BASE, PORT = 8888 } = process.env;
 const app = express();
@@ -139,7 +140,7 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
 
 app.get("/pay", (req, res) => {
   login = req.query.login;
-  isMozilla = req.query.is_mozilla==='true';
+  isMozilla = req.query.is_mozilla === 'true';
   console.log('on req, login:', login);
   console.log('on req, is mozilla:', isMozilla);
   res.sendFile(path.resolve("./client/checkout.html"));
@@ -153,7 +154,7 @@ app.get("/paid", (req, res) => {
     console.error('Error updating document: ', error);
   });
   const file = getFile();
-  console.log('final file',file);
+  console.log('final file', file);
   res.sendFile(path.resolve(`./client/${file}`));
 });
 
@@ -163,6 +164,7 @@ function getFile() {
 }
 
 app.get("/price", (req, res) => {
+  console.log('get rpice:' + PRICE);
   res.send(PRICE)
 });
 
