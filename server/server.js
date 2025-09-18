@@ -11,6 +11,12 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const originalConsoleLog = console.log;
+console.log = function (...args) {
+  const timestamp = new Date().toLocaleString();
+  originalConsoleLog.apply(console, [`[${timestamp}]`, ...args]);
+};
+
 const serviceAccount = JSON.parse(readFileSync(`${__dirname}/serviceAccountKey.json`, 'utf-8'));
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
@@ -173,10 +179,7 @@ app.get('/id', (req, res) => {
   res.json({ id: PAYPAL_CLIENT_ID });
 });
 
-app.get('/favicon.ico', (req, res) => {
-  console.log('get fav');
-  res.sendStatus(200);
-});
+app.get('/favicon.ico', (req, res) => res.sendStatus(200));
 
 app.listen(PORT, () => {
   console.log(`Node server listening at http://localhost:${PORT}/`);
