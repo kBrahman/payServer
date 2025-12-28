@@ -153,8 +153,8 @@ app.get("/pay", (req, res) => {
 });
 
 app.get("/paid", (req, res) => {
-  console.log('updating firestre by login', login);
-  admin.firestore().collection('user').doc(login).update({ isPremium: true, token: Date.now() }).then(() => {
+  console.log('updating firestore by login', login);
+  admin.firestore().collection('user').doc(login).update({ isPremium: true, token: Date.now(), in_grace_period: false }).then(() => {
     console.log('Document successfully updated!');
   }).catch((error) => {
     console.error('Error updating document: ', error);
