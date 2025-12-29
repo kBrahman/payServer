@@ -5,7 +5,7 @@ fetch('/id').then(resp => resp.json())
         const script = document.createElement('script');
         // Pass the locale to PayPal SDK. Default to en_US if missing.
         // Note: If PayPal doesn't support the specific locale (e.g. some obscure format), it usually falls back safely.
-        script.src = `https://www.paypal.com/sdk/js?client-id=${data.id}&components=buttons&enable-funding=venmo,paylater&locale=${locale || 'en_US'}`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${data.id}&components=buttons&enable-funding=venmo,paylater`;
         script.onload = function () {
             window.paypal.Buttons({
                 style: {
