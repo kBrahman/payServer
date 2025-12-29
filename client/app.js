@@ -12,11 +12,12 @@ fetch('/id').then(resp => resp.json())
                     shape: 'pill',
                     layout: 'vertical',
                 },
-                async createOrder() {
+                async createOrder(data, actions) {
                     try {
                         const response = await fetch("/api/orders", {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" }
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ countryCode: locale })
                         });
                         const orderData = await response.json();
                         if (orderData.id) return orderData.id;

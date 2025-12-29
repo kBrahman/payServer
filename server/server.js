@@ -52,7 +52,7 @@ const generateAccessToken = async () => {
  * Create an order to start the transaction.
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
  */
-const createOrder = async () => {
+const createOrder = async (countryCode) => {
   const accessToken = await generateAccessToken();
   const url = `${BASE}/v2/checkout/orders`;
   const payload = {
@@ -66,6 +66,14 @@ const createOrder = async () => {
       }
     ]
   };
+
+  if (countryCode) {
+    payload.payer = {
+      address: {
+        country_code: countryCode
+      }
+    };
+  }
 
   const response = await fetch(url, {
     headers: {
@@ -124,7 +132,8 @@ async function handleResponse(response) {
 app.post("/api/orders", async (req, res) => {
   try {
     // use the cart information passed from the front-end to calculate the order amount detals
-    const { jsonResponse, httpStatusCode } = await createOrder();
+    const { countryCode } = req.body;
+    const { jsonResponse, httpStatusCode } = await createOrder(countryCode);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
