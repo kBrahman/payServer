@@ -26,7 +26,6 @@ app.use(express.static("client"));
 app.use(express.json());
 var login;
 var isMozilla;
-var isInGracePeriod;
 /**
  * Generate an OAuth 2.0 access token for authenticating with PayPal REST APIs.
  * @see https://developer.paypal.com/api/rest/authentication/
@@ -55,7 +54,6 @@ const generateAccessToken = async () => {
  */
 const createOrder = async () => {
   const accessToken = await generateAccessToken();
-  console.log('access tok:' + accessToken);
   const url = `${BASE}/v2/checkout/orders`;
   const payload = {
     intent: "CAPTURE",
@@ -147,17 +145,21 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
 
 app.get("/pay", (req, res) => {
   login = req.query.login;
+  console.log('on req, quey:', req.query);
   isMozilla = req.query.is_mozilla === 'true';
-  isInGracePeriod = req.query.in_grace_period === 'true';
   console.log('on req, login:', login);
   console.log('on req, is mozilla:', isMozilla);
-  console.log('on req, is isInGracePeriod:', isInGracePeriod);
   res.sendFile(path.resolve("./client/checkout.html"));
 });
 
 app.get("/paid", (req, res) => {
   console.log('updating firestore by login', login);
-  admin.firestore().collection('user').doc(login).update({ isPremium: true, token: Date.now() - (isInGracePeriod ? 172800000 : 0), in_grace_period: false }).then(() => {
+  const userRef = admin.firestore().collection('user').doc(login);
+  userRef.get().then((doc) => {
+    const isGrace = doc.exists && doc.data().in_grace_period;
+    const token = isGrace ? Date.now() - 172800000 : Date.now();
+    return userRef.update({ isPremium: true, token, in_grace_period: false });
+  }).then(() => {
     console.log('Document successfully updated!');
   }).catch((error) => {
     console.error('Error updating document: ', error);
