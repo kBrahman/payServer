@@ -1,6 +1,6 @@
 {
   "name": "paypal-standard-integration",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "server/server.js",
   "type": "module",
   "scripts": {
