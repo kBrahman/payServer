@@ -26,6 +26,7 @@ app.use(express.static("client"));
 app.use(express.json());
 var login;
 var isMozilla;
+var isInGracePeriod;
 /**
  * Generate an OAuth 2.0 access token for authenticating with PayPal REST APIs.
  * @see https://developer.paypal.com/api/rest/authentication/
@@ -147,8 +148,10 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
 app.get("/pay", (req, res) => {
   login = req.query.login;
   isMozilla = req.query.is_mozilla === 'true';
+  isInGracePeriod = req.query.in_grace_period === 'true';
   console.log('on req, login:', login);
   console.log('on req, is mozilla:', isMozilla);
+  console.log('on req, is isInGracePeriod:', isInGracePeriod);
   res.sendFile(path.resolve("./client/checkout.html"));
 });
 
