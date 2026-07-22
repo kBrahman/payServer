@@ -55,25 +55,25 @@ const generateAccessToken = async () => {
 const createOrder = async (countryCode) => {
   const accessToken = await generateAccessToken();
   const url = `${BASE}/v2/checkout/orders`;
-  const purchaseUnit = {
-    amount: {
-      currency_code: "USD",
-      value: `${PRICE}`
-    }
+  const payload = {
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD",
+          value: `${PRICE}`
+        }
+      }
+    ]
   };
 
   if (countryCode) {
-    purchaseUnit.shipping = {
+    payload.payer = {
       address: {
         country_code: countryCode
       }
     };
   }
-
-  const payload = {
-    intent: "CAPTURE",
-    purchase_units: [purchaseUnit]
-  };
 
 
   const response = await fetch(url, {
