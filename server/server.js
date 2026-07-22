@@ -164,8 +164,9 @@ app.get("/pay", (req, res) => {
 });
 
 app.get("/paid", (req, res) => {
-  console.log('updating firestore by login', login);
-  const userRef = admin.firestore().collection('user').doc(login);
+  const activeLogin = req.query.login || login;
+  console.log('updating firestore by login', activeLogin);
+  const userRef = admin.firestore().collection('user').doc(activeLogin);
   userRef.get().then((doc) => {
     const isGrace = doc.exists && doc.data().in_grace_period;
     const token = isGrace ? Date.now() - 172800000 : Date.now();
@@ -192,7 +193,8 @@ app.get("/price", (req, res) => {
 
 app.get('/id', (req, res) => {
   console.log('get id');
-  res.json({ id: PAYPAL_CLIENT_ID });
+  const isSandbox = BASE ? BASE.includes('sandbox') : true;
+  res.json({ id: PAYPAL_CLIENT_ID, environment: isSandbox ? 'SANDBOX' : 'LIVE' });
 });
 
 app.get('/favicon.ico', (req, res) => res.sendStatus(200));
