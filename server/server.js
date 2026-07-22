@@ -67,15 +67,6 @@ const createOrder = async (countryCode) => {
     ]
   };
 
-  if (countryCode) {
-    payload.payment_source = {
-      paypal: {
-        address: {
-          country_code: countryCode
-        }
-      }
-    };
-  }
 
   const response = await fetch(url, {
     headers: {
