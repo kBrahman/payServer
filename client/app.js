@@ -3,10 +3,18 @@ fetch('/id').then(resp => resp.json())
         const params = new URLSearchParams(window.location.search);
         let locale = params.get('locale');
         if (locale === 'null') locale = null;
+        let sdkLocale = '';
+        if (locale) {
+            const locUpper = locale.toUpperCase();
+            if (locUpper === 'KZ') {
+                sdkLocale = '&locale=ru_KZ';
+            } else if (locUpper === 'US' || locUpper === 'GB' || locUpper === 'CA' || locUpper === 'AU') {
+                sdkLocale = `&locale=en_${locUpper}`;
+            }
+        }
         const script = document.createElement('script');
-        // Pass the locale to PayPal SDK. Default to en_US if missing.
-        // Note: If PayPal doesn't support the specific locale (e.g. some obscure format), it usually falls back safely.
-        script.src = `https://www.paypal.com/sdk/js?client-id=${data.id}&components=buttons&enable-funding=venmo,paylater${locale ? `&locale=en_${locale}` : ''}`;
+        // Pass the locale to PayPal SDK.
+        script.src = `https://www.paypal.com/sdk/js?client-id=${data.id}&components=buttons&enable-funding=venmo,paylater${sdkLocale}`;
         script.onload = function () {
             window.paypal.Buttons({
                 style: {

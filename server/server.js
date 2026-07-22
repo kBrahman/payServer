@@ -69,8 +69,8 @@ const createOrder = async (countryCode) => {
 
   if (countryCode) {
     payload.payment_source = {
-      card: {
-        billing_address: {
+      paypal: {
+        address: {
           country_code: countryCode
         }
       }
