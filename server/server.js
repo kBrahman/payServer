@@ -131,102 +131,40 @@ async function handleResponse(response) {
   }
 }
 
-const createAndCaptureCardOrder = async ({ number, expiry, security_code, name, countryCode, login }) => {
-  const accessToken = await generateAccessToken();
-  const url = `${BASE}/v2/checkout/orders`;
-
-  let formattedExpiry = expiry;
-  if (expiry.includes('/')) {
-    const parts = expiry.split('/');
-    const month = parts[0].trim().padStart(2, '0');
-    let year = parts[1].trim();
-    if (year.length === 2) year = `20${year}`;
-    formattedExpiry = `${year}-${month}`;
-  }
-
-  const payload = {
-    intent: "CAPTURE",
-    purchase_units: [
-      {
-        amount: {
-          currency_code: "USD",
-          value: `${PRICE}`
-        }
-      }
-    ],
-    payment_source: {
-      card: {
-        name: name,
-        number: number.replace(/\s+/g, ''),
-        expiry: formattedExpiry,
-        security_code: security_code,
-        billing_address: {
-          country_code: countryCode || 'US'
-        }
-      }
-    }
-  };
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const resData = await handleResponse(response);
-
-  if (resData.httpStatusCode === 200 || resData.httpStatusCode === 201) {
-    const status = resData.jsonResponse.status;
-    if (status === 'COMPLETED' || status === 'APPROVED') {
-      const activeLogin = login;
-      if (activeLogin) {
-        console.log('Card payment completed! Updating firestore for login:', activeLogin);
-        const userRef = admin.firestore().collection('user').doc(activeLogin);
-        const doc = await userRef.get();
-        const isGrace = doc.exists && doc.data().in_grace_period;
-        const token = isGrace ? Date.now() - 172800000 : Date.now();
-        await userRef.update({ isPremium: true, token, in_grace_period: false });
-        console.log('Firestore successfully updated for card payment!');
-      }
-    }
-  }
-
-  return resData;
-};
-
 app.post("/api/orders", async (req, res) => {
   try {
     // use the cart information passed from the front-end to calculate the order amount detals
-    const { countryCode } = req.body;
+    let { countryCode } = req.body;
+
+    if (!countryCode) {
+      // Get the client IP address, checking proxy headers first
+      let clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      // If multiple IPs are present, take the first one
+      if (clientIp && clientIp.includes(',')) {
+        clientIp = clientIp.split(',')[0].trim();
+      }
+      console.log('client ip:', clientIp)
+      if (clientIp) {
+        try {
+          const geoRes = await fetch(`https://get.geojs.io/v1/ip/country/${clientIp}`);
+          if (geoRes.ok) {
+            const code = await geoRes.text();
+            if (code && code.trim().length === 2) {
+              countryCode = code.trim();
+            }
+          }
+        } catch (e) {
+          console.error("Geocoding failed:", e);
+          countryCode = 'US';
+        }
+      }
+    }
+    console.log('countryCode:', countryCode);
     const { jsonResponse, httpStatusCode } = await createOrder(countryCode);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
     res.status(500).json({ error: "Failed to create order." });
-  }
-});
-
-app.post("/api/orders/card", async (req, res) => {
-  try {
-    const { number, expiry, security_code, name, countryCode, login } = req.body;
-    if (!number || !expiry || !security_code || !name) {
-      return res.status(400).json({ error: "Missing required card fields." });
-    }
-    const { jsonResponse, httpStatusCode } = await createAndCaptureCardOrder({
-      number,
-      expiry,
-      security_code,
-      name,
-      countryCode,
-      login
-    });
-    res.status(httpStatusCode).json(jsonResponse);
-  } catch (error) {
-    console.error("Failed to process card payment:", error);
-    res.status(500).json({ error: error.message || "Failed to process card payment." });
   }
 });
 
@@ -241,7 +179,6 @@ app.post("/api/orders/:orderID/capture", async (req, res) => {
   }
 });
 
-
 app.get("/pay", (req, res) => {
   login = req.query.login;
   console.log('on req, quey:', req.query);
@@ -252,9 +189,8 @@ app.get("/pay", (req, res) => {
 });
 
 app.get("/paid", (req, res) => {
-  const activeLogin = req.query.login || login;
-  console.log('updating firestore by login', activeLogin);
-  const userRef = admin.firestore().collection('user').doc(activeLogin);
+  console.log('updating firestore by login', login);
+  const userRef = admin.firestore().collection('user').doc(login);
   userRef.get().then((doc) => {
     const isGrace = doc.exists && doc.data().in_grace_period;
     const token = isGrace ? Date.now() - 172800000 : Date.now();
@@ -281,8 +217,7 @@ app.get("/price", (req, res) => {
 
 app.get('/id', (req, res) => {
   console.log('get id');
-  const isSandbox = BASE ? BASE.includes('sandbox') : true;
-  res.json({ id: PAYPAL_CLIENT_ID, environment: isSandbox ? 'SANDBOX' : 'LIVE' });
+  res.json({ id: PAYPAL_CLIENT_ID });
 });
 
 app.get('/favicon.ico', (req, res) => res.sendStatus(200));
